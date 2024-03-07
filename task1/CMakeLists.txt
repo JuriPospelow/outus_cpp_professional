@@ -25,4 +25,4 @@ else()
     target_compile_options(hello PRIVATE -Wall -Wextra -pedantic -Werror -g)
 endif()
 
-# add_subdirectory(gtests)
+add_subdirectory(gtests)
