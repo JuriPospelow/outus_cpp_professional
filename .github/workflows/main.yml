@@ -25,6 +25,7 @@ jobs:
       - name: Project build
         working-directory: ./task1
         run: |
+          cmake . -DPATCH_VERSION=${{ github.run_number }}
           cmake -B build
           cmake --build build
       - name: Test
