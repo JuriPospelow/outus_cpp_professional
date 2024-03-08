@@ -5,7 +5,10 @@ set(PROJECT_VESRION 0.0.${PATCH_VERSION})
 
 project(helloworld  VERSION ${PROJECT_VESRION})
 
+configure_file(git_hub_version.h.in git_hub_version.h)
+
 add_executable(hello main.cpp)
+add_library(hello_lib lib.cpp)
 set_target_properties(hello PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON)
 
 set(MASTER_DIR "${CMAKE_CURRENT_SOURCE_DIR}/")
@@ -18,6 +21,10 @@ add_custom_target(
 )
 
 add_dependencies(hello increment_build_version)
+
+target_link_libraries(hello PRIVATE
+    hello_lib
+)
 
 if (MSVC)
     # warning level 4 and all warnings as errors
