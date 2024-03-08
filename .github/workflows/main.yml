@@ -28,6 +28,7 @@ jobs:
           cmake -DPATCH_VERSION=${{ github.run_number }}
           cmake -B build
           cmake --build build
+          cmake --build --target package
       - name: Test
         working-directory: ./task1/build
       # Execute tests defined by the CMake configuration.
