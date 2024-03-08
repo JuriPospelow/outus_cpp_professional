@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(01.homework)
+project(helloworld)
 
 add_executable(hello main.cpp)
 set_target_properties(hello PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON)
@@ -26,3 +26,9 @@ else()
 endif()
 
 add_subdirectory(gtests)
+
+set(CPACK_GENERATOR DEB)
+
+set(CPACK_PACKAGE_CONTACT example@example.com)
+
+include(CPack)
