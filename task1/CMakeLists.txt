@@ -14,6 +14,8 @@ set_target_properties(hello PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON)
 set(MASTER_DIR "${CMAKE_CURRENT_SOURCE_DIR}/")
 message(${MASTER_DIR})
 
+install(TARGETS hello RUNTIME DESTINATION bin)
+
 add_custom_target(
     increment_build_version
     COMMAND ${CMAKE_COMMAND}
