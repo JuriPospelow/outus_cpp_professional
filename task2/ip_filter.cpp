@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 // ("",  '.') -> [""]
 // ("11", '.') -> ["11"]
@@ -29,6 +30,60 @@ std::vector<std::string> split(const std::string &str, char d)
     return r;
 }
 
+using namespace std;
+
+// Custom Comparator to sort the array in increasing order
+bool customComparator(string a, string b) {
+    // Breaking into the octets
+    vector<string> octetsA;
+    vector<string> octetsB;
+
+    string octet = "";
+    for (size_t i = 0; i < a.size(); i++) {
+        if (a[i] == '.') {
+            octetsA.push_back(octet);
+            octet = "";
+        } else {
+            octet += a[i];
+        }
+    }
+    octetsA.push_back(octet);
+
+    octet = "";
+    for (size_t i = 0; i < b.size(); i++) {
+        if (b[i] == '.') {
+            octetsB.push_back(octet);
+            octet = "";
+        } else {
+            octet += b[i];
+        }
+    }
+    octetsB.push_back(octet);
+
+    // Condition if the IP Address is same then return false
+    if (octetsA == octetsB) {
+        return false;
+    }
+
+    // Compare the octets and return the result
+    for (int i = 0; i < 4; i++) {
+        if (stoi(octetsA[i]) > stoi(octetsB[i])) {
+            return false;
+        } else if (stoi(octetsA[i]) < stoi(octetsB[i])) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Function to sort the IP Addresses
+vector<string> sortIPAddress(vector<string> arr) {
+    // Sort the Array using Custom Comparator
+    sort(arr.begin(), arr.end(), customComparator);
+    return arr;
+}
+
+
 int main(/* int argc, char const *argv[] */)
 {
     try
@@ -42,20 +97,47 @@ int main(/* int argc, char const *argv[] */)
         }
 
         // TODO reverse lexicographically sort
+// convert vector<vector<string>> to vector<string>
+         vector<string> convertor;
+         for(auto ip = ip_pool.cbegin(); ip != ip_pool.cend(); ++ip)
+         {
+           string tmp;
+           for(auto ip_part = ip->cbegin(); ip_part != ip->cend(); ++ip_part)
+           {
+               if (ip_part != ip->cbegin())
+               {
+                   tmp += ".";
+               }
+               tmp += *ip_part;
+           }
+           convertor.push_back(tmp);
+       }
 
-        for(auto ip = ip_pool.cbegin(); ip != ip_pool.cend(); ++ip)
-        {
-            for(auto ip_part = ip->cbegin(); ip_part != ip->cend(); ++ip_part)
-            {
-                if (ip_part != ip->cbegin())
-                {
-                    std::cout << ".";
+        convertor = sortIPAddress(convertor);
 
-                }
-                std::cout << *ip_part;
-            }
-            std::cout << std::endl;
-        }
+       //  reverse(convertor.begin(), convertor.end());
+        // stable_sort(convertor.begin(), convertor.end());
+       for(auto item : convertor)
+       {
+           cout << item << endl;
+      }
+
+
+
+
+        // for(auto ip = ip_pool.cbegin(); ip != ip_pool.cend(); ++ip)
+        // {
+        //     for(auto ip_part = ip->cbegin(); ip_part != ip->cend(); ++ip_part)
+        //     {
+        //         if (ip_part != ip->cbegin())
+        //         {
+        //             std::cout << ".";
+
+        //         }
+        //         std::cout << *ip_part;
+        //     }
+        //     std::cout << std::endl;
+        // }
 
         // 222.173.235.246
         // 222.130.177.64
