@@ -115,7 +115,7 @@ int main(/* int argc, char const *argv[] */)
 
         convertor = sortIPAddress(convertor);
 
-       //  reverse(convertor.begin(), convertor.end());
+        reverse(convertor.begin(), convertor.end());
         // stable_sort(convertor.begin(), convertor.end());
        for(auto item : convertor)
        {
