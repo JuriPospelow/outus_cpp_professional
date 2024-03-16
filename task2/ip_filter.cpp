@@ -117,11 +117,12 @@ int main(/* int argc, char const *argv[] */)
 
         reverse(convertor.begin(), convertor.end());
         // stable_sort(convertor.begin(), convertor.end());
+#if 0
        for(auto item : convertor)
        {
            cout << item << endl;
-      }
-
+       }
+#endif
 
 
 
@@ -149,6 +150,13 @@ int main(/* int argc, char const *argv[] */)
 
         // TODO filter by first byte and output
         // ip = filter(1)
+
+       for(auto item : convertor)
+       {
+           if(item[0] == '1' && item[1] == '.') cout << item << endl;
+       }
+
+
 
         // 1.231.69.33
         // 1.87.203.225
