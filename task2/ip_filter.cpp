@@ -83,35 +83,26 @@ vector<string> sortIPAddress(vector<string> arr) {
     return arr;
 }
 
+vector<string> createPool()
+{
+    vector<string> tmp_vector;
+
+    for(std::string line; std::getline(std::cin, line);)
+    {
+        string tmp = line.substr(0,line.find('\t'));
+        if(tmp.find('.')) tmp_vector.push_back(tmp);
+    }
+    return tmp_vector;
+}
 
 int main(/* int argc, char const *argv[] */)
 {
     try
     {
-        std::vector<std::vector<std::string> > ip_pool;
-
-        for(std::string line; std::getline(std::cin, line);)
-        {
-            std::vector<std::string> v = split(line, '\t');
-            ip_pool.push_back(split(v.at(0), '.'));
-        }
 
         // TODO reverse lexicographically sort
 // convert vector<vector<string>> to vector<string>
-         vector<string> convertor;
-         for(auto ip = ip_pool.cbegin(); ip != ip_pool.cend(); ++ip)
-         {
-           string tmp;
-           for(auto ip_part = ip->cbegin(); ip_part != ip->cend(); ++ip_part)
-           {
-               if (ip_part != ip->cbegin())
-               {
-                   tmp += ".";
-               }
-               tmp += *ip_part;
-           }
-           convertor.push_back(tmp);
-       }
+         vector<string> convertor = createPool();
 
         convertor = sortIPAddress(convertor);
 
