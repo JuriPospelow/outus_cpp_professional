@@ -2,98 +2,128 @@
 #include <cstdlib>
 #include <iostream>
 #include <string>
+#include <string_view>
 #include <vector>
 #include <algorithm>
 
-// ("",  '.') -> [""]
-// ("11", '.') -> ["11"]
-// ("..", '.') -> ["", "", ""]
-// ("11.", '.') -> ["11", ""]
-// (".11", '.') -> ["", "11"]
-// ("11.22", '.') -> ["11", "22"]
-std::vector<std::string> split(const std::string &str, char d)
-{
-    std::vector<std::string> r;
-
-    std::string::size_type start = 0;
-    std::string::size_type stop = str.find_first_of(d);
-    while(stop != std::string::npos)
-    {
-        r.push_back(str.substr(start, stop - start));
-
-        start = stop + 1;
-        stop = str.find_first_of(d, start);
-    }
-
-    r.push_back(str.substr(start));
-
-    return r;
-}
+#include <functional>
 
 using namespace std;
 
+class IP_Adr_Pool
+{
+public:
+    IP_Adr_Pool() {
+        for(std::string line; std::getline(std::cin, line);)
+        {
+            string tmp = line.substr(0,line.find('\t'));
+            if(tmp.find('.')) _string_pool.push_back(tmp);
+        }
+    }
+    void sort(){sortIPAddress(); sorted = true;}
+    void reverse(){ if(!sorted) sort(); std::reverse(_string_pool.begin(), _string_pool.end());}
+    vector<string> get() {return  _string_pool;}
+    friend ostream& operator<<(std::ostream& os, const IP_Adr_Pool &ip)
+    {
+       for(auto item : ip._string_pool)
+       {
+           cout << item << endl;
+       }
+        return os;
+    }
+    vector<string> filter( const string str1, [[maybe_unused]] const string str2="")
+    {
+        vector<string> tmp;
+
+        for(auto item : _string_pool)
+        {
+            if(str2 == ""){
+                if(item.find(str1 + ".") == 0) tmp.push_back(item);
+            } else {
+                if(item.find(str1 + ".") == 0 && item.find(str2 + ".") == item.find(".")+1) tmp.push_back(item);
+            }
+        }
+
+        return tmp;
+    }
+    vector<string> filter_any( const string str1)
+    {
+        vector<string> tmp;
+
+        auto first_byte = [&str1](string str){return str.find(str1 + ".") == 0;};
+        auto middle_bytes = [&str1](string str){return str.find("." + str1 + ".") != string::npos;};
+        auto last_byte = [&str1](string str){return str.find("." + str1) == str.size() - str1.size() - 1;};
+
+        for(auto item : _string_pool)
+        {
+            if(first_byte(item) || middle_bytes(item) || last_byte(item)) tmp.push_back(item);
+
+        }
+
+        return tmp;
+    }
+private:
+   vector<string> _string_pool;
+   bool sorted {};
+
 // Custom Comparator to sort the array in increasing order
-bool customComparator(string a, string b) {
-    // Breaking into the octets
-    vector<string> octetsA;
-    vector<string> octetsB;
+    bool customComparator(string a, string b) {
+        // Breaking into the octets
+        vector<string> octetsA;
+        vector<string> octetsB;
 
-    string octet = "";
-    for (size_t i = 0; i < a.size(); i++) {
-        if (a[i] == '.') {
-            octetsA.push_back(octet);
-            octet = "";
-        } else {
-            octet += a[i];
+        string octet = "";
+        for (size_t i = 0; i < a.size(); i++) {
+            if (a[i] == '.') {
+                octetsA.push_back(octet);
+                octet = "";
+            } else {
+                octet += a[i];
+            }
         }
-    }
-    octetsA.push_back(octet);
+        octetsA.push_back(octet);
 
-    octet = "";
-    for (size_t i = 0; i < b.size(); i++) {
-        if (b[i] == '.') {
-            octetsB.push_back(octet);
-            octet = "";
-        } else {
-            octet += b[i];
+        octet = "";
+        for (size_t i = 0; i < b.size(); i++) {
+            if (b[i] == '.') {
+                octetsB.push_back(octet);
+                octet = "";
+            } else {
+                octet += b[i];
+            }
         }
-    }
-    octetsB.push_back(octet);
+        octetsB.push_back(octet);
 
-    // Condition if the IP Address is same then return false
-    if (octetsA == octetsB) {
+        // Condition if the IP Address is same then return false
+        if (octetsA == octetsB) {
+            return false;
+        }
+
+        // Compare the octets and return the result
+        for (int i = 0; i < 4; i++) {
+            if (stoi(octetsA[i]) > stoi(octetsB[i])) {
+                return false;
+            } else if (stoi(octetsA[i]) < stoi(octetsB[i])) {
+                return true;
+            }
+        }
         return false;
     }
-
-    // Compare the octets and return the result
-    for (int i = 0; i < 4; i++) {
-        if (stoi(octetsA[i]) > stoi(octetsB[i])) {
-            return false;
-        } else if (stoi(octetsA[i]) < stoi(octetsB[i])) {
-            return true;
-        }
+    // Function to sort the IP Addresses
+    void sortIPAddress() {
+        // Sort the Array using Custom Comparator
+        std::sort(_string_pool.begin(), _string_pool.end(), bind(&IP_Adr_Pool::customComparator, this, std::placeholders::_1, std::placeholders::_2)); // wieso direct geht nicht???
     }
-    return false;
-}
+};
 
-// Function to sort the IP Addresses
-vector<string> sortIPAddress(vector<string> arr) {
-    // Sort the Array using Custom Comparator
-    sort(arr.begin(), arr.end(), customComparator);
-    return arr;
-}
-
-vector<string> createPool()
-{
-    vector<string> tmp_vector;
-
-    for(std::string line; std::getline(std::cin, line);)
+    ostream& operator<<(std::ostream& os, const vector<string> &ip)
     {
-        string tmp = line.substr(0,line.find('\t'));
-        if(tmp.find('.')) tmp_vector.push_back(tmp);
+       for(auto item : ip)
+       {
+           cout << item << endl;
+       }
+        return os;
     }
-    return tmp_vector;
-}
 
 int main(/* int argc, char const *argv[] */)
 {
@@ -102,35 +132,18 @@ int main(/* int argc, char const *argv[] */)
 
         // TODO reverse lexicographically sort
 // convert vector<vector<string>> to vector<string>
-         vector<string> convertor = createPool();
+        IP_Adr_Pool pool;
+        pool.reverse();
 
-        convertor = sortIPAddress(convertor);
+        // auto convertor = pool.get();
 
-        reverse(convertor.begin(), convertor.end());
-        // stable_sort(convertor.begin(), convertor.end());
-#if 1
-       for(auto item : convertor)
-       {
-           cout << item << endl;
-       }
-#endif
-
-
-
-        // for(auto ip = ip_pool.cbegin(); ip != ip_pool.cend(); ++ip)
+        // for(auto item : convertor)
         // {
-        //     for(auto ip_part = ip->cbegin(); ip_part != ip->cend(); ++ip_part)
-        //     {
-        //         if (ip_part != ip->cbegin())
-        //         {
-        //             std::cout << ".";
-
-        //         }
-        //         std::cout << *ip_part;
-        //     }
-        //     std::cout << std::endl;
+        //    cout << item << endl;
         // }
 
+
+        // cout << pool ;
         // 222.173.235.246
         // 222.130.177.64
         // 222.82.198.61
@@ -141,12 +154,13 @@ int main(/* int argc, char const *argv[] */)
 
         // TODO filter by first byte and output
         // ip = filter(1)
-#if 1
-       for(auto item : convertor)
-       {
-           if(item[0] == '1' && item[1] == '.') cout << item << endl;
-       }
-#endif
+
+    //   for(auto item : convertor)
+    //   {
+    //       if(item[0] == '1' && item[1] == '.') cout << item << endl;
+    //   }
+
+// cout << pool.filter("1");
         // 1.231.69.33
         // 1.87.203.225
         // 1.70.44.170
@@ -155,12 +169,15 @@ int main(/* int argc, char const *argv[] */)
 
         // TODO filter by first and second bytes and output
         // ip = filter(46, 70)
-#if 1
+
+#if 0
        for(auto item : convertor)
        {
            if(item[0] == '4' && item[1] == '6' && item[2] == '.' && item[3] == '7' && item[4] == '0') cout << item << endl;
        }
 #endif
+
+// cout << pool.filter("46","70");
         // 46.70.225.39
         // 46.70.147.26
         // 46.70.113.73
@@ -169,7 +186,10 @@ int main(/* int argc, char const *argv[] */)
         // TODO filter by any byte and output
         // ip = filter_any(46)
 
-#if 1
+cout << pool << pool.filter("1") << pool.filter("46", "70") << pool.filter_any("46");
+
+// cout << pool.filter_any("46");
+#if 0
        for(auto item : convertor)
        {
            if((item[0] == '4' && item[1] == '6' && item[2] == '.')
