@@ -117,7 +117,7 @@ int main(/* int argc, char const *argv[] */)
 
         reverse(convertor.begin(), convertor.end());
         // stable_sort(convertor.begin(), convertor.end());
-#if 0
+#if 1
        for(auto item : convertor)
        {
            cout << item << endl;
@@ -150,7 +150,7 @@ int main(/* int argc, char const *argv[] */)
 
         // TODO filter by first byte and output
         // ip = filter(1)
-#if 0
+#if 1
        for(auto item : convertor)
        {
            if(item[0] == '1' && item[1] == '.') cout << item << endl;
@@ -177,6 +177,17 @@ int main(/* int argc, char const *argv[] */)
 
         // TODO filter by any byte and output
         // ip = filter_any(46)
+
+#if 1
+       for(auto item : convertor)
+       {
+           if((item[0] == '4' && item[1] == '6' && item[2] == '.')
+                || (item[item.find(".") + 1] == '4' && item[item.find(".") + 2] == '6' && item[item.find(".") + 3] == '.')
+                || (item[item.find(".", item.find(".")+1)+1] == '4' && item[item.find(".", item.find(".")+1) + 2] == '6' && item[item.find(".", item.find(".")+1) + 3] == '.')
+                || (item[item.size() - 3] == '.' && item[item.size() - 2] == '4' && item[item.size()-1] == '6' ))
+                    cout << item << endl;
+       }
+#endif
 
         // 186.204.34.46
         // 186.46.222.194
