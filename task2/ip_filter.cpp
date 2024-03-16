@@ -150,14 +150,12 @@ int main(/* int argc, char const *argv[] */)
 
         // TODO filter by first byte and output
         // ip = filter(1)
-
+#if 0
        for(auto item : convertor)
        {
            if(item[0] == '1' && item[1] == '.') cout << item << endl;
        }
-
-
-
+#endif
         // 1.231.69.33
         // 1.87.203.225
         // 1.70.44.170
@@ -166,7 +164,12 @@ int main(/* int argc, char const *argv[] */)
 
         // TODO filter by first and second bytes and output
         // ip = filter(46, 70)
-
+#if 1
+       for(auto item : convertor)
+       {
+           if(item[0] == '4' && item[1] == '6' && item[2] == '.' && item[3] == '7' && item[4] == '0') cout << item << endl;
+       }
+#endif
         // 46.70.225.39
         // 46.70.147.26
         // 46.70.113.73
