@@ -1,13 +1,5 @@
 #include "ip_adr_pool.hpp"
 
-IP_Adr_Pool::IP_Adr_Pool() {
-    for(std::string line; std::getline(std::cin, line);)
-    {
-        string tmp = line.substr(0,line.find('\t'));
-        if(tmp.find('.')) _string_pool.push_back(tmp);
-    }
-}
-
 ostream& operator<<(std::ostream& os, const IP_Adr_Pool &ip)
 {
    for(auto item : ip._string_pool)

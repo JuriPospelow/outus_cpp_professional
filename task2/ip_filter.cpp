@@ -17,9 +17,13 @@ int main(/* int argc, char const *argv[] */)
     try
     {
 
-        // TODO reverse lexicographically sort
-// convert vector<vector<string>> to vector<string>
-        IP_Adr_Pool pool;
+        vector<string> tmp_v;
+        for(std::string line; std::getline(std::cin, line);)
+        {
+            string tmp = line.substr(0,line.find('\t'));
+            if(tmp.find('.')) tmp_v.push_back(tmp);
+        }
+        IP_Adr_Pool pool(tmp_v);
         pool.reverse();
 
         // cout << pool ;

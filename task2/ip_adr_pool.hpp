@@ -9,7 +9,7 @@ using namespace std;
 class IP_Adr_Pool
 {
 public:
-    IP_Adr_Pool();
+    IP_Adr_Pool(vector<string>& tmp) :_string_pool(tmp) {}
     void sort(){sortIPAddress(); sorted = true;}
     void reverse(){ if(!sorted) sort(); std::reverse(_string_pool.begin(), _string_pool.end());}
     vector<string> get() {return  _string_pool;}
