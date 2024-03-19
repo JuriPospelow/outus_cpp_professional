@@ -23,7 +23,7 @@ else()
     target_compile_options(ip_filter PRIVATE -Wall -Wextra -pedantic -Werror -g)
 endif()
 
-# add_subdirectory(gtests)
+add_subdirectory(gtests)
 
 set(CPACK_GENERATOR DEB)
 
