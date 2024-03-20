@@ -1,11 +1,9 @@
-name: 'main'
+name: 'task1'
 
 on:
   push:
     branches:
       - master
-      - task1
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -28,24 +26,12 @@ jobs:
           cmake -DPATCH_VERSION=${{ github.run_number }}
           cmake -B build
           cmake --build build
-          cmake --build . --target package
-      - name: Project Task2 build
-        working-directory: ./task2
-        run: |
-          cmake -DPATCH_VERSION=${{ github.run_number }}
-          cmake -B build
-          cmake --build build
-          cmake --build . --target package          
+          cmake --build . --target package  
       - name: Test Task1
         working-directory: ./task1/build
       # Execute tests defined by the CMake configuration.
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
         run: gtests/build_version_tests 
-      - name: Test Task2
-        working-directory: ./task2/build
-      # Execute tests defined by the CMake configuration.
-      # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
-        run: gtests/ip_filter_tests         
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -64,7 +50,5 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./task1/helloworld-0.0.${{ github.run_number }}-Linux.deb
-                       ./task2/ip_filter-0.0.${{ github.run_number }}-Linux.deb
           asset_name: helloworld-0.0.${{ github.run_number }}-Linux.deb
-                      ip_filter-0.0.${{ github.run_number }}-Linux.deb
           asset_content_type: application/vnd.debian.binary-package
