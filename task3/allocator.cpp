@@ -23,6 +23,11 @@ struct std_11_simple_allocator {
 
     ~std_11_simple_allocator()
     {
+        if(memory != nullptr){
+            cnt = 0;
+            free(memory);
+            memory = nullptr;
+        }
         cout << "all DTOR" << endl;
     }
 
@@ -34,8 +39,8 @@ struct std_11_simple_allocator {
     T* allocate (std::size_t n)
     {
         if(memory == nullptr){
-            // memory = ::operator new(max_size*sizeof(T));
             memory = malloc(max_size*sizeof(T));
+            if(memory == nullptr) throw bad_alloc();
             cout << "all init: " << (void*)memory <<endl;
         } else if(n > max_size) {
             cout << "all ERROR" << endl;
@@ -50,10 +55,8 @@ struct std_11_simple_allocator {
             cout << "all ERROR CNT" << endl;
             throw bad_alloc();
         }
-
-        // cout << "all: " << max_size <<endl;
-        // return static_cast<T*>(memory);
     }
+
     void deallocate ([[maybe_unused]] T* p, [[maybe_unused]]std::size_t n)
     {
         // ::operator delete(p);
