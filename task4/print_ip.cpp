@@ -6,6 +6,15 @@
 
 using namespace std;
 
+std::ostream &operator<<(std::ostream &os, const vector<string> &container) {
+	for (auto iter = std::begin(container); iter != std::end(container); ++iter) {
+		if (iter != std::begin(container))
+			std::cout << ".";
+		os << *iter;
+	}
+	return os;
+}
+
 namespace juri {
 
 template <typename T>
@@ -94,62 +103,26 @@ print_ip( std::make_tuple(123, 456, 789, 0) ); // 123.456.789.0
 
 int main() {
 
-	vector<string> tmp = juri::print_ip(int32_t{2130706433});
 	cout << "juri::print_ip(int32_t{2130706433}): ";
-	for(size_t i = 0; i < tmp.size();++i){
-		std::cout << tmp[i];
-		if(i != tmp.size()-1) cout << ".";
-	}
-	cout << endl;
+	cout << juri::print_ip(int32_t{2130706433}) << endl;
 
-	tmp = juri::print_ip(int16_t{0});
 	cout << "juri::print_ip(int16_t{0}): ";
-	for(size_t i = 0; i < tmp.size();++i){
-		std::cout << tmp[i];
-		if(i != tmp.size()-1) cout << ".";
-	}
-	cout << endl;
+	cout << juri::print_ip(int16_t{0}) << endl;
 
-	tmp = juri::print_ip(int8_t{-1});
 	cout << "juri::print_ip(int8_t{-1}: ";
-	for(size_t i = 0; i < tmp.size();++i){
-		std::cout << tmp[i];
-		if(i != tmp.size()-1) cout << ".";
-	}
-	cout << endl;
+	cout << juri::print_ip(int8_t{-1}) << endl;
 
-	tmp = juri::print_ip(int64_t{8875824491850138409});
 	cout << "juri::print_ip(int64_t{8875824491850138409}: ";
-	for(size_t i = 0; i < tmp.size();++i){
-		std::cout << tmp[i];
-		if(i != tmp.size()-1) cout << ".";
-	}
-	cout << endl;
+	cout << juri::print_ip(int64_t{8875824491850138409}) << endl;
 
-	// tmp = juri::print_ip("Hello, World!");
-	tmp = juri::print_ip(string{"Hello, World!"} );
 	cout << "juri::print_ip(string{“Hello, World!”}: ";
-	for(size_t i = 0; i < tmp.size();++i){
-		std::cout << tmp[i];
-		if(i != tmp.size()-1) cout << ".";
-	}
-	cout << endl;
+	cout << juri::print_ip(string{"Hello, World!"}) << endl;
 
-	tmp = juri::print_ip(vector<int>{100, 200, 300, 400});
 	cout << "juri::print_ip(vector<int>{100, 200, 300, 400}: ";
-	for(size_t i = 0; i < tmp.size();++i){
-		std::cout << tmp[i];
-		if(i != tmp.size()-1) cout << ".";
-	}
-	cout << endl;
+	cout << juri::print_ip(vector<int>{100, 200, 300, 400}) << endl;
 
-	tmp = juri::print_ip(list<short>{400, 300, 200, 100});
 	cout << "juri::print_ip(list<short>{400, 300, 200, 100}: ";
-	for(size_t i = 0; i < tmp.size();++i){
-		std::cout << tmp[i];
-		if(i != tmp.size()-1) cout << ".";
-	}
-	cout << endl;
+	cout << juri::print_ip(list<short>{400, 300, 200, 100}) << endl;
 
 	return 0;
 }
