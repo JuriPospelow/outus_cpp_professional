@@ -1,0 +1,50 @@
+name: 'main'
+
+on:
+  push:
+    branches:
+      - task4
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions: write-all
+    steps:
+      - name: Project checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: GTest download
+        run: git clone https://github.com/google/googletest.git googletest
+      - name: GTest compile and install
+        working-directory: ./googletest
+        run: |
+          sudo cmake .
+          sudo cmake --build . --target install
+      - name: Project build
+        working-directory: ./task4
+        run: |
+          cmake -DPATCH_VERSION=${{ github.run_number }}
+          cmake -B build
+          cmake --build build
+          cmake --build . --target package
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.run_number }}
+          release_name: Release ${{ github.run_number }}
+          draft: false
+          prerelease: false
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./task4/print_ip-0.0.${{ github.run_number }}-Linux.deb
+          asset_name: print_ip-0.0.${{ github.run_number }}-Linux.deb
+          asset_content_type: application/vnd.debian.binary-package
