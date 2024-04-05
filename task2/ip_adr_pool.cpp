@@ -1,5 +1,31 @@
 #include "ip_adr_pool.hpp"
 
+std::vector<int> split(const std::string &str, char d)
+{
+    std::vector<int> r;
+
+    std::string::size_type start = 0;
+    std::string::size_type stop = str.find_first_of(d);
+    while(stop != std::string::npos)
+    {
+        r.push_back(/*static_cast<uint8_t>*/(stoi(str.substr(start, stop - start))));
+
+        start = stop + 1;
+        stop = str.find_first_of(d, start);
+    }
+
+    r.push_back(/*static_cast<uint8_t>*/(stoi(str.substr(start))));
+
+    return r;
+}
+
+
+IP_Adr_Pool::IP_Adr_Pool(vector<string>& tmp) :_string_pool(tmp) {
+    for(auto item : tmp) {
+        _ip_pool.insert(split(item, '.'));
+    }
+}
+
 ostream& operator<<(std::ostream& os, const IP_Adr_Pool &ip)
 {
    for(auto item : ip._string_pool)
