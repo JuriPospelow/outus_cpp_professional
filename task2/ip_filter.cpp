@@ -14,11 +14,20 @@ ostream& operator<<(std::ostream& os, const vector<int> &ip)
           return os;
       }
 
+void filter(IP_Adr_Pool& data, vector<int> search_value, vector<int> trigger)
+{
+  std::multiset<vector<int>>::iterator itup;
+  itup = data._ip_pool.upper_bound(search_value);
+  while(--itup != data._ip_pool.end()  && *itup > trigger){
+    cout << *itup << endl;
+  }
+}
+
 int main(/* int argc, char const *argv[] */)
 {
     try
     {
-     
+
       vector<string> tmp_v;
       for(std::string line; std::getline(std::cin, line);)
       {
@@ -26,7 +35,7 @@ int main(/* int argc, char const *argv[] */)
           if(tmp.find('.')) tmp_v.push_back(tmp);
       }
       IP_Adr_Pool pool(tmp_v);
-      pool.reverse();
+      // pool.reverse();
 
 
       for (std::multiset<vector<int>>::reverse_iterator i(pool._ip_pool.rbegin()), end(pool._ip_pool.rend());
@@ -49,11 +58,8 @@ int main(/* int argc, char const *argv[] */)
         // TODO filter by first byte and output
         // ip = filter(1)
 
-      std::multiset<vector<int>>::iterator itup;
-      itup = pool._ip_pool.upper_bound({1,255,255,255});
-      while(--itup != pool._ip_pool.end()){
-        cout << *itup << endl;
-      }
+      filter(pool, vector<int>{1,255,255,255}, vector<int>{1,0,0,0});
+
 // cout << pool.filter("1");
         // 1.231.69.33
         // 1.87.203.225
@@ -63,11 +69,9 @@ int main(/* int argc, char const *argv[] */)
 
         // TODO filter by first and second bytes and output
         // ip = filter(46, 70)
-      itup = pool._ip_pool.upper_bound({46,70,255,255});
-      vector<int> tmp_vec = {46, 70, 0,0};
-      while(--itup != pool._ip_pool.end() && *itup > tmp_vec){
-        cout << *itup << endl;
-      }
+
+      filter(pool, vector<int>{46,70,255,255}, vector<int> {46, 70, 0,0});
+
 // cout << pool.filter("46","70");
         // 46.70.225.39
         // 46.70.147.26
