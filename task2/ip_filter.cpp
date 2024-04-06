@@ -4,15 +4,15 @@
 using namespace std;
 
 ostream& operator<<(std::ostream& os, const IP_Addr& ip)
-      {
-        auto separator = "";
-        for(auto item : ip)
-        {
-          cout << separator << item ;
-          separator = ".";
-        }
-          return os;
-      }
+{
+  auto separator = "";
+  for(auto item : ip)
+  {
+    cout << separator << item ;
+    separator = ".";
+  }
+    return os;
+}
 
 
 void print(vector<IP_Addr> data)
@@ -53,7 +53,7 @@ int main()
         // TODO filter by first byte and output
         // ip = filter(1)
 
-      print(pool.filter(IP_Addr{1}));
+      print(pool.filter({1}));
 
 // cout << pool.filter("1");
         // 1.231.69.33
@@ -64,7 +64,7 @@ int main()
 
         // TODO filter by first and second bytes and output
         // ip = filter(46, 70)
-      print(pool.filter(IP_Addr{46,70}));
+      print(pool.filter({46,70}));
 
 // cout << pool.filter("46","70");
         // 46.70.225.39
