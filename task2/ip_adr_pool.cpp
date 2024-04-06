@@ -1,13 +1,13 @@
 #include "ip_adr_pool.hpp"
 
-IP_Addr split(const std::string &str, char d)
+auto split(const std::string &str, char d)
 {
     IP_Addr r;
 
     std::string::size_type start = 0;
     std::string::size_type stop = str.find_first_of(d);
     auto i{0};
-    while(stop != std::string::npos)
+    while(stop != std::string_view::npos)
     {
         r[i] = /*static_cast<uint8_t>*/(stoi(str.substr(start, stop - start)));
 
@@ -22,7 +22,7 @@ IP_Addr split(const std::string &str, char d)
 }
 
 
-IP_Adr_Pool::IP_Adr_Pool(vector<string>& tmp) :_string_pool(tmp) {
+IP_Adr_Pool::IP_Adr_Pool(vector<string>& tmp) {
     for(auto item : tmp) {
         _ip_pool.insert(split(item, '.'));
     }
