@@ -14,6 +14,14 @@ ostream& operator<<(std::ostream& os, const IP_Addr& ip)
           return os;
       }
 
+
+void print(vector<IP_Addr> data)
+{
+  for (auto i = data.cbegin(); i < data.cend(); ++i){
+    cout << *i << endl;
+  }
+}
+
 int main()
 {
     try
@@ -45,10 +53,8 @@ int main()
         // TODO filter by first byte and output
         // ip = filter(1)
 
-  vector<IP_Addr> filtered_ip = pool.filter(IP_Addr{1});
-  for (auto i = filtered_ip.cbegin(); i < filtered_ip.cend(); ++i){
-    cout << *i << endl;
-  }
+      print(pool.filter(IP_Addr{1}));
+
 // cout << pool.filter("1");
         // 1.231.69.33
         // 1.87.203.225
@@ -58,11 +64,7 @@ int main()
 
         // TODO filter by first and second bytes and output
         // ip = filter(46, 70)
-
-  filtered_ip = pool.filter(IP_Addr{46,70});
-  for (auto i = filtered_ip.cbegin(); i < filtered_ip.cend(); ++i){
-    cout << *i << endl;
-  }
+      print(pool.filter(IP_Addr{46,70}));
 
 // cout << pool.filter("46","70");
         // 46.70.225.39
@@ -73,11 +75,7 @@ int main()
         // TODO filter by any byte and output
         // ip = filter_any(46)
 
-  filtered_ip = pool.filter_ip(46);
-  for (auto i = filtered_ip.cbegin(); i < filtered_ip.cend(); ++i){
-    cout << *i << endl;
-  }
-
+      print(pool.filter_ip(46));
 
 // // cout << pool << pool.filter("1") << pool.filter("46", "70") << pool.filter_any("46");
 
