@@ -16,12 +16,25 @@ ostream& operator<<(std::ostream& os, const IP_Addr& ip)
           return os;
       }
 
-vector<IP_Addr> filter(IP_Adr_Pool& data, IP_Addr search_value, IP_Addr trigger)
+void update_trigger(IP_Addr& value, const IP_Addr& search_value)
 {
+  for(size_t i = 0; i < search_value.size(); ++i){
+    value[i] = search_value[i];
+  }
+}
+
+vector<IP_Addr> filter(IP_Adr_Pool& data, const IP_Addr& search_value)
+{
+  IP_Addr low_trigger = {0,0,0,0}; //search_value,
+  IP_Addr upper_trigger = {255,255,255,255};//trigger
+
+  update_trigger(low_trigger,   search_value);
+  update_trigger(upper_trigger, search_value);
+
   vector<IP_Addr> tmp;
   std::multiset<IP_Addr>::iterator itup;
-  itup = data._ip_pool.upper_bound(search_value);
-  while(--itup != data._ip_pool.end()  && *itup > trigger){
+  itup = data._ip_pool.upper_bound(upper_trigger);
+  while(--itup != data._ip_pool.end()  && *itup > low_trigger){
     tmp.push_back(*itup);
   }
   return tmp;
@@ -42,7 +55,7 @@ vector<IP_Addr> filter_ip(IP_Adr_Pool& data, int search_value)
     return tmp;
  }
 
-int main(/* int argc, char const *argv[] */)
+int main()
 {
     try
     {
@@ -73,8 +86,7 @@ int main(/* int argc, char const *argv[] */)
         // TODO filter by first byte and output
         // ip = filter(1)
 
-      // filter(pool, IP_Addr{1,255,255,255}, IP_Addr{1,0,0,0});
-  vector<IP_Addr> filtered_ip = filter(pool, IP_Addr{1,255,255,255}, IP_Addr{1,0,0,0});
+  vector<IP_Addr> filtered_ip = filter(pool, IP_Addr{1});
   for (auto i = filtered_ip.cbegin(); i < filtered_ip.cend(); ++i){
     cout << *i << endl;
   }
@@ -88,8 +100,7 @@ int main(/* int argc, char const *argv[] */)
         // TODO filter by first and second bytes and output
         // ip = filter(46, 70)
 
-      // filter(pool, IP_Addr{46,70,255,255}, IP_Addr {46, 70, 0,0});
-  filtered_ip = filter(pool, IP_Addr{46,70,255,255}, IP_Addr {46, 70, 0,0});
+  filtered_ip = filter(pool, IP_Addr{46,70});
   for (auto i = filtered_ip.cbegin(); i < filtered_ip.cend(); ++i){
     cout << *i << endl;
   }
