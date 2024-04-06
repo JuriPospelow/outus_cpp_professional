@@ -3,8 +3,6 @@
 
 using namespace std;
 
-using IP_Addr = vector<int>;
-
 ostream& operator<<(std::ostream& os, const IP_Addr& ip)
       {
         auto separator = "";
@@ -15,45 +13,6 @@ ostream& operator<<(std::ostream& os, const IP_Addr& ip)
         }
           return os;
       }
-
-void update_trigger(IP_Addr& value, const IP_Addr& search_value)
-{
-  for(size_t i = 0; i < search_value.size(); ++i){
-    value[i] = search_value[i];
-  }
-}
-
-vector<IP_Addr> filter(IP_Adr_Pool& data, const IP_Addr& search_value)
-{
-  IP_Addr low_trigger = {0,0,0,0}; //search_value,
-  IP_Addr upper_trigger = {255,255,255,255};//trigger
-
-  update_trigger(low_trigger,   search_value);
-  update_trigger(upper_trigger, search_value);
-
-  vector<IP_Addr> tmp;
-  std::multiset<IP_Addr>::iterator itup;
-  itup = data._ip_pool.upper_bound(upper_trigger);
-  while(--itup != data._ip_pool.end()  && *itup > low_trigger){
-    tmp.push_back(*itup);
-  }
-  return tmp;
-}
-
-vector<IP_Addr> filter_ip(IP_Adr_Pool& data, int search_value)
-{
-  vector<IP_Addr> tmp;
-  for (auto i(data._ip_pool.rbegin()), end(data._ip_pool.rend());
-      i != end;
-      ++i)
-    {
-      // Each element is a vector
-      if(find((*i).begin(), (*i).end(), search_value) != (*i).end()) {
-        tmp.push_back(*i);
-      }
-    }
-    return tmp;
- }
 
 int main()
 {
@@ -86,7 +45,7 @@ int main()
         // TODO filter by first byte and output
         // ip = filter(1)
 
-  vector<IP_Addr> filtered_ip = filter(pool, IP_Addr{1});
+  vector<IP_Addr> filtered_ip = pool.filter(IP_Addr{1});
   for (auto i = filtered_ip.cbegin(); i < filtered_ip.cend(); ++i){
     cout << *i << endl;
   }
@@ -100,7 +59,7 @@ int main()
         // TODO filter by first and second bytes and output
         // ip = filter(46, 70)
 
-  filtered_ip = filter(pool, IP_Addr{46,70});
+  filtered_ip = pool.filter(IP_Addr{46,70});
   for (auto i = filtered_ip.cbegin(); i < filtered_ip.cend(); ++i){
     cout << *i << endl;
   }
@@ -114,7 +73,7 @@ int main()
         // TODO filter by any byte and output
         // ip = filter_any(46)
 
-  filtered_ip = filter_ip(pool, 46);
+  filtered_ip = pool.filter_ip(46);
   for (auto i = filtered_ip.cbegin(); i < filtered_ip.cend(); ++i){
     cout << *i << endl;
   }
