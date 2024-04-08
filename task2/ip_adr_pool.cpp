@@ -22,13 +22,13 @@ auto split(const std::string &str, char d)
 }
 
 
-IP_Adr_Pool::IP_Adr_Pool(vector<string>& tmp) {
+IP_Adr_Pool::IP_Adr_Pool(const vector<string>& tmp) {
     for(auto item : tmp) {
         _ip_pool.insert(split(item, '.'));
     }
 }
 
-constexpr void IP_Adr_Pool::update_trigger(IP_Addr& value, std :: initializer_list <int>  search_value)
+constexpr void IP_Adr_Pool::update_trigger(IP_Addr& value, const std :: initializer_list <int> & search_value)
 {
     auto i{0};
     for(auto byte : search_value){
@@ -37,7 +37,7 @@ constexpr void IP_Adr_Pool::update_trigger(IP_Addr& value, std :: initializer_li
     }
 }
 
-vector<IP_Addr> IP_Adr_Pool::filter(std :: initializer_list <int>  search_value)
+vector<IP_Addr> IP_Adr_Pool::filter(const std :: initializer_list <int> & search_value)
 {
     IP_Addr low_trigger = {0,0,0,0}; //search_value,
     IP_Addr upper_trigger = {255,255,255,255};//trigger
@@ -55,7 +55,7 @@ vector<IP_Addr> IP_Adr_Pool::filter(std :: initializer_list <int>  search_value)
     return tmp;
 }
 
-vector<IP_Addr> IP_Adr_Pool::filter_ip(int search_value)
+vector<IP_Addr> IP_Adr_Pool::filter_ip(const int search_value) const
 {
   vector<IP_Addr> tmp;
   for (auto i(_ip_pool.rbegin()), end(_ip_pool.rend());
