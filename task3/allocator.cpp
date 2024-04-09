@@ -3,6 +3,7 @@
 #include <cassert>
 #include <array>
 #include "custom_allocator.hpp"
+#include <stdlib.h>
 
 using namespace std;
 
@@ -16,12 +17,21 @@ int factorial(int n) {
 template <typename T, size_t SIZE>
 class FIFO {
 public:
-    void push_back([[maybe_unused]]T element) {}
-    T pop() {return *_p_front;}
+    void push_back([[maybe_unused]]T element)
+    {
+        _array[_p_back++] = element;
+    }
+
+    T pop()
+    {
+        if(_p_front >=  static_cast<T>(SIZE)) exit(EXIT_FAILURE);
+        return _array[_p_front++];
+    }
+
 private:
     array <T,SIZE> _array;
-    T* _p_back;
-    T* _p_front;
+    T _p_back{0};
+    T _p_front{0};
 };
 
 int main ()
@@ -51,7 +61,7 @@ int main ()
 
     FIFO <int, 10> queue;
     for(int i = 0; i < 10; ++i) {
-     queue.push_back(i);
+        queue.push_back(i);
     }
     for(int i = 0; i < 10; ++i) {
         int tmp = queue.pop();
