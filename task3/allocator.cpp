@@ -1,5 +1,7 @@
 #include <iostream>
 #include <map>
+#include <cassert>
+#include <array>
 
 using namespace std;
 
@@ -75,6 +77,16 @@ constexpr bool operator!= (const std_11_simple_allocator<T,U>& a1, const std_11_
     return false;
 }
 
+template <typename T, size_t SIZE>
+class FIFO {
+public:
+    void push_back([[maybe_unused]]T element) {}
+    T pop() {return *_p_front;}
+private:
+    array <T,SIZE> _array;
+    T* _p_back;
+    T* _p_front;
+};
 
 int main ()
 {
@@ -98,6 +110,17 @@ int main ()
 
     for(auto item : map2){
         cout << item.first <<  " " << item.second << endl;
+    }
+
+
+    FIFO <int, 10> queue;
+    for(int i = 0; i < 10; ++i) {
+     queue.push_back(i);
+    }
+    for(int i = 0; i < 10; ++i) {
+        int tmp = queue.pop();
+        assert(tmp == i);
+        cout << tmp << endl;
     }
 
     return 0;
