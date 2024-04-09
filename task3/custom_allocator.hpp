@@ -50,10 +50,22 @@ struct std_11_simple_allocator {
         }
     }
 
+    template<typename U, typename ...Args>
+    void construct(U *p, Args &&...args)
+    {
+        new(p) U(std::forward<Args>(args)...);
+    }
+
     void deallocate ([[maybe_unused]] T* p, [[maybe_unused]]std::size_t n)
     {
         // ::operator delete(p);
     }
+
+    void destroy(T *p)
+    {
+        p->~T();
+    }
+
 };
 
 template <class T, unsigned U,  class TA, unsigned UA>
