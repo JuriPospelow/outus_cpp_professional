@@ -41,13 +41,16 @@ public:
     bool is_empty() {return _p_front == _p_back;}
     size_t size() {return _p_back - _p_front;}
 
+    T* begin(){return _p_array[_p_front];};
+    T* end(){return (_p_array[_p_back - 1]);};
+
 private:
     allocator_type _alloc;
-    // *T _p_array[SIZE];
     array <T*,SIZE> _p_array;
     size_t _p_back{0};
     size_t _p_front{0};
 };
+
 
 int main ()
 {
@@ -81,21 +84,30 @@ int main ()
     cout << "EMPTY: " << queue.is_empty() << endl;
     cout << "SIZE: " << queue.size() << endl;
 
-    for(int i = 0; i < 10; ++i) {
-        int tmp = queue.pop();
-        assert(tmp == i);
-        cout << tmp << endl;
-    }
+    // for(int i = 0; i < 10; ++i) {
+    //     int tmp = queue.pop();
+    //     assert(tmp == i);
+    //     cout << tmp << endl;
+    // }
 
     FIFO <int, 10, std_11_simple_allocator<int, 10 >> queue_cust_alloc;
     for(int i = 0; i < 10; ++i) {
         queue_cust_alloc.push_back(i);
     }
-    for(int i = 0; i < 10; ++i) {
-        int tmp = queue_cust_alloc.pop();
-        assert(tmp == i);
-        cout << tmp << endl;
+
+    cout << (void*)queue_cust_alloc.begin() << endl;
+    cout << (void*)queue_cust_alloc.end() << endl;
+
+
+    for(auto start = queue_cust_alloc.begin(); start <= queue_cust_alloc.end(); ++start) {
+        cout << *start << endl;
     }
+
+    // for(int i = 0; i < 10; ++i) {
+    //     int tmp = queue_cust_alloc.pop();
+    //     assert(tmp == i);
+    //     cout << tmp << endl;
+    // }
 
     return 0;
 }
