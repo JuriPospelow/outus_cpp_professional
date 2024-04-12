@@ -21,7 +21,7 @@ struct std_11_simple_allocator {
             free(memory);
             memory = nullptr;
         }
-        cout << "all DTOR" << endl;
+        // //cout << "all DTOR" << endl;
     }
 
     template <class U>
@@ -34,18 +34,18 @@ struct std_11_simple_allocator {
         if(memory == nullptr){
             memory = malloc(max_size*sizeof(T));
             if(memory == nullptr) throw bad_alloc();
-            cout << "all init: " << (void*)memory <<endl;
+            // //cout << "all init: " << (void*)memory <<endl;
         } else if(n > max_size) {
-            cout << "all ERROR" << endl;
+            //cout << "all ERROR" << endl;
             throw bad_alloc();
         }
         if (cnt + n <= max_size) {
             auto chunk = reinterpret_cast<T *>(memory) + cnt;
             cnt += n;
-            cout << "all: " << (void*)chunk << endl;
+            //cout << "all: " << (void*)chunk << endl;
             return chunk;
         } else {
-            cout << "all ERROR CNT" << endl;
+            //cout << "all ERROR CNT" << endl;
             throw bad_alloc();
         }
     }
