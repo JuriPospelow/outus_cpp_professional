@@ -60,17 +60,12 @@ vector<string> print_ip(const Container<Type> bytes) {
 	return tmp;
 }
 
-// template <
-// 	typename Types,
-// 	template <typename> typename T,
-// 	typename Fake = typename std::enable_if_t<
-// 		std::is_same_v<<T<Types ...>, std::tuple<Types ...>>
-// >
-// vector<string> print_ip2(T bytes) {
-// 	auto [p, q, r, s] = bytes;
-// 	vector<string> tmp {to_string(p), to_string(q), to_string(r), to_string(s)};
-// 	return tmp;
-// }
+template <typename T>
+vector<string> print_ip(tuple<T, T, T, T> bytes) {
+	auto [p, q, r, s] = bytes;
+	vector<string> tmp {to_string(p), to_string(q), to_string(r), to_string(s)};
+	return tmp;
+}
 
 }
 /*
@@ -106,8 +101,8 @@ int main() {
 	cout << "juri::print_ip(list<short>{400, 300, 200, 100}: ";
 	cout << juri::print_ip(list<short>{400, 300, 200, 100}) << endl;
 
-	// cout << "juri::print_ip(make_tuple(123, 456, 789, 0): ";
-	// cout << juri::print_ip2(make_tuple(123, 456, 789, 0)) << endl;
+	cout << "juri::print_ip(make_tuple(123, 456, 789, 0): ";
+	cout << juri::print_ip(make_tuple(123, 456, 789, 0)) << endl;
 
 	return 0;
 }
