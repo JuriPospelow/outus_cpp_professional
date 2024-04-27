@@ -2,33 +2,33 @@
 
 #include "controller.hpp"
 
-struct MenuBarShape {
-    Button* bCreateCircle;
-    Button* bRemove;
+struct _MenuBarShape {
+    Button* _bCreateCircle = &bCreateCircle;
+    Button* _bRemove = &bRemove;
     // ... another shape buttons
-};
+} MenuBarShape;
 
-struct MenuBarFile {
-    Button* bExport2JPEG;
-    Button* bImport;
-    Button* bNewDocument;
+struct _MenuBarFile {
+    Button* _bExport2JPEG = &bExport2JPEG;
+    Button* _bImport = &bImport;
+    Button* _bNewDocument = &bNewCanvas;
     // .. . another file buttons
-};
+} MenuBarFile;
 
 struct Menu {
-    MenuBarShape* menuShape = new MenuBarShape();
-    MenuBarFile* menuFile = new MenuBarFile();
+    _MenuBarShape* menuShape =  &MenuBarShape;
+    _MenuBarFile* menuFile = &MenuBarFile;
 };
 
 int main()
 {
 
     Menu menu;
-    menu.menuShape->bCreateCircle->click(); // in main
-    menu.menuShape->bRemove->click(); // in main
-    menu.menuFile->bExport2JPEG->click();
-    menu.menuFile->bImport->click();
-    menu.menuFile->bNewDocument->click();
+    menu.menuShape->_bCreateCircle->click();
+    menu.menuShape->_bRemove->click();
+    menu.menuFile->_bExport2JPEG->click();
+    menu.menuFile->_bImport->click();
+    menu.menuFile->_bNewDocument->click();
 
     return 0;
 }

@@ -1,5 +1,5 @@
 #pragma once
-
+#include <memory>
 //modulFile
 
 using XML = std::string;
@@ -9,7 +9,7 @@ using XML = std::string;
  */
 class Adapter {
  private:
-  XML *document;
+  std::unique_ptr<XML> document;
 
  public:
   Adapter(XML *adaptee) : document(adaptee) {}
@@ -32,6 +32,6 @@ class JPEG : public IObserver{ // Observer, Subscriber
             _subj->detach(this);
         }
     private:
-        ISubject* _subj;
-        Adapter* _adapter;
+        std::unique_ptr<ISubject> _subj;
+        std::unique_ptr<Adapter>_adapter;
 };

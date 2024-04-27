@@ -1,4 +1,6 @@
 #pragma once
+
+#include <memory>
 #include "base.hpp"
 
 //modulShape
@@ -14,7 +16,7 @@ class Circle : public IObserver{ // Observer, Subscriber
             _subj->detach(this);
         }
     private:
-        ISubject* _subj;
+        std::unique_ptr<ISubject> _subj;
 };
 //modulShape
 class Triangle : public IObserver{ // Observer, Subscriber
@@ -29,5 +31,5 @@ class Triangle : public IObserver{ // Observer, Subscriber
             _subj->detach(this);
         }
     private:
-        ISubject* _subj;
+        std::unique_ptr<ISubject> _subj;
 };

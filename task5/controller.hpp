@@ -8,11 +8,17 @@
 
 
 //controller
-Button* bCreateCircle = new Button(); // view
-IObserver* shapeCircle = new Circle(bCreateCircle); // modul
+Button bCreateCircle; // view
+Circle shapeCircle = Circle(&bCreateCircle); // modul
 
-Button* bCreateTriangle = new Button(); // view
-IObserver* shapeTriangle = new Triangle(bCreateTriangle); // modul
+Button bRemove; // view
+// IObserver* shapeRemove = new Remove(&bRemove); // modul
 
-Button* bExport2JPEG = new Button(); // view
-IObserver* fileJPEG = new JPEG(bExport2JPEG); // modul
+Button bExport2JPEG; // view
+JPEG fileJPEG = JPEG(&bExport2JPEG); // modul
+
+Button bImport; // view
+// IObserver* fileDoc = new Document(&bImport); // modul
+
+Button bNewCanvas; // view
+// IObserver* canvas = new Canvas(&bNewCanvas); // modul
