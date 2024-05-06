@@ -3,9 +3,10 @@
 #include <cassert>
 #include <tuple>
 #include <vector>
+#include <map>
 
 using namespace std;
-
+#if 0
 template<typename T, size_t S>
 struct Array{
   T*p;
@@ -64,14 +65,89 @@ struct Array2Dimensional{
 };
 
 Array2Dimensional <int, 10, -1> ad;
+#endif
+#if 0
+template<typename T, T defVal>
+struct proxy{
+    vector<T> v;
+    operator T ()
+    {
+        return defVal;
+    }
+    proxy& operator=(const proxy& anather){
 
+    }
+};
 
+template<typename T, T defVal>
+ struct cell{
+    map<int,proxy<T, defVal>> m;
+    proxy<T, defVal>& operator[](int ind){
+        return m[ind];
+    }
+ };
+
+ template<typename T, T defVal>
+ struct Matrix: public cell<T, defVal>
+ {
+    map<int,cell<T, defVal>> m;
+    cell<T, defVal>& operator[](int ind){
+        return m[ind];
+    }
+ };
+ #endif
+
+// struct sparse_matrix {
+//     map<int,cell<T, defVal>> sparse_matrix;
+// };
+
+struct proxy{
+    array<int,2> last_ind;
+};
+
+template<typename T>
+struct proxy2{
+    void set_value(const T val);
+};
+
+ template<typename T, T defVal>
+ struct cell:public proxy{
+    map<int,T> m;
+    proxy2<T>* cell_owner;
+
+    T& operator[](int ind){
+        last_ind[1] = ind;
+        return m[ind];
+    }
+    cell& operator=(const T val){
+        cell_owner->set_value(val);
+        return *this;
+    }
+ };
+
+ template<typename T, T defVal>
+ struct Matrix: public proxy, public cell<T,defVal> , public proxy2<T>
+ {
+    map<int,cell<T, defVal>> sparse_matrix;
+
+    void set_value(const T val){
+        sparse_matrix[last_ind[0]][last_ind[1]] = val;
+    }
+
+    cell<T, defVal>& operator[](int ind){
+        last_ind[0] = ind;
+        return sparse_matrix[ind];
+    }
+    size_t size(){
+        return sparse_matrix.size();
+    }
+ };
 
 // При запуске программы необходимо создать матрицу с пустым значением 0
 
 int main()
 {
-
+#if 0
     assert(ad.size() == 0); // все ячейки свободны
 
     auto a = ad[0][0];
@@ -103,7 +179,13 @@ int main()
         std::tie(x, y, v) = c;
         std::cout << x << y << v << std::endl;
     }
-
-
+#endif
+Matrix<int,-1> pc;
+pc[0][0] = 12;
+auto e = pc[0][1];
+e = pc[0][12];
+pc[100][100] = 120;
+pc[1000][100] = 120;
+cout << e << " " << pc[100][100] << " " << pc.size() << endl;
     return 0;
 }
