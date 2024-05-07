@@ -1,6 +1,7 @@
 #include <iostream>
 #include <array>
 #include <map>
+#include <cassert>
 
 using namespace std;
 
@@ -49,15 +50,27 @@ struct cell_proxy:public indexer
 template<typename T, size_t N, T def>
  struct tensor{
     map<int,map<int,T>> m_cell;
+    size_t _size=0;
+
     void set_value(T val, indexer* indr){
         int i1 = indr->get_index(0);
         int i2 = indr->get_index(1);
         m_cell[i1][i2] = val;
+        ++_size;
     }
     T get_value(indexer* indr){
         int i1 = indr->get_index(0);
         int i2 = indr->get_index(1);
+        if(m_cell.find(i1) == m_cell.end()) {
+            return def;
+        } else if(m_cell[i1].find(i2) == m_cell[i1].end()){
+            return def;
+        }
         return m_cell[i1][i2];
+    }
+
+    size_t size(){
+        return _size;
     }
 
 };
@@ -75,13 +88,32 @@ struct Matrix:public cell_owner<T>{
   T get_cell_value(indexer* indr){
     return m_tensor.get_value(indr);
   }
+  size_t size(){
+    return m_tensor.size();
+  }
 };
 
 int main()
 {
-    Matrix<int, 2, -1> m;
-    m[1][10] = 5;
-    std::cout<<m[1][10];
+    Matrix<int, 2, -1> matrix;
+    assert(matrix.size() == 0); // все ячейки свободны
+    auto a = matrix[0][0];
+    assert(a == -1);
+    assert(matrix.size() == 0);
 
+    matrix[100][100] = 314;
+    assert(matrix[100][100] == 314);
+    assert(matrix.size() == 1);
+
+    // // выведется одна строка
+    // // 100100314
+    // for(auto c: matrix)
+    // {
+    // int x;
+    // int y;
+    // int v;
+    // std::tie(x, y, v) = c;
+    // std::cout << x << y << v << std::endl;
+    // }
     return 0;
 }
