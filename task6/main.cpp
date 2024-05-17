@@ -1,5 +1,7 @@
 #include <iostream>
 #include <array>
+#include <vector>
+#include <tuple>
 #include <map>
 #include <cassert>
 
@@ -21,14 +23,15 @@ struct cell_proxy:public indexer
 {
     cell_owner<T>* m_cell_owwner;
     array<int,N> m_indexer;
+    size_t _index = 0;
 
     cell_proxy(int index, cell_owner<T>* cell){
         m_cell_owwner = cell;
-        m_indexer[0] = index;
+        m_indexer[_index++] = index;
     }
 
     cell_proxy<T,N>& operator[](int index){
-        m_indexer[1] = index;
+        m_indexer[_index++] = index;
         return *this;
     }
 
@@ -51,12 +54,14 @@ template<typename T, size_t N, T def>
  struct tensor{
     map<int,map<int,T>> m_cell;
     size_t _size=0;
+    std::vector<tuple<int, int, T>> adapter_tensor;
 
     void set_value(T val, indexer* indr){
         int i1 = indr->get_index(0);
         int i2 = indr->get_index(1);
         m_cell[i1][i2] = val;
         ++_size;
+        adapter_tensor.push_back(make_tuple(i1,i2,val));
     }
     T get_value(indexer* indr){
         int i1 = indr->get_index(0);
@@ -91,6 +96,10 @@ struct Matrix:public cell_owner<T>{
   size_t size(){
     return m_tensor.size();
   }
+
+  typename vector<tuple<int,int,T>>::iterator  begin(){return m_tensor.adapter_tensor.begin();}
+  typename vector<tuple<int,int,T>>::iterator end(){return m_tensor.adapter_tensor.end();}
+
 };
 
 int main()
@@ -105,15 +114,18 @@ int main()
     assert(matrix[100][100] == 314);
     assert(matrix.size() == 1);
 
-    // // выведется одна строка
-    // // 100100314
-    // for(auto c: matrix)
-    // {
-    // int x;
-    // int y;
-    // int v;
-    // std::tie(x, y, v) = c;
-    // std::cout << x << y << v << std::endl;
-    // }
+    ((matrix[100][100] = 314) = 0) = 217;
+    assert(matrix[100][100] == 217);
+
+    // выведется одна строка
+    // 100100314
+    for(auto c: matrix)
+    {
+        int x;
+        int y;
+        int v;
+        std::tie(x, y, v) = c;
+        std::cout << x << y << v << std::endl;
+    }
     return 0;
 }
