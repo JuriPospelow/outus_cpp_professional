@@ -19,12 +19,12 @@ struct cell_owner{
 
 
 template<typename T, size_t N>
-struct cell_proxy:public indexer
+class cell_proxy:public indexer
 {
     cell_owner<T>* m_cell_owwner;
     array<int,N> m_indexer;
     size_t _index = 0;
-
+public:
     cell_proxy(int index, cell_owner<T>* cell){
         m_cell_owwner = cell;
         m_indexer[_index++] = index;
@@ -51,9 +51,10 @@ struct cell_proxy:public indexer
 };
 
 template<typename T, size_t N, T def>
- struct tensor{
+ class tensor{
     map<int,map<int,T>> m_cell;
     size_t _size=0;
+public:
     std::vector<tuple<int, int, T>> adapter_tensor;
 
     void set_value(T val, indexer* indr){
@@ -81,9 +82,9 @@ template<typename T, size_t N, T def>
 };
 
 template<typename T, size_t N, T def>
-struct Matrix:public cell_owner<T>{
+class Matrix:public cell_owner<T>{
     tensor<T,N,def> m_tensor;
-
+public:
   cell_proxy<T,N> operator[](int ind){
       return cell_proxy<T,N>(ind, this);
   }
@@ -127,5 +128,54 @@ int main()
         std::tie(x, y, v) = c;
         std::cout << x << y << v << std::endl;
     }
+
+// При запуске программы необходимо создать матрицу с пустым значением 0, заполнить главную диагональ матрицы (от [0,0] до [9,9]) значениями от 0 до 9.
+    Matrix<int, 2, 0> matrix2;
+    auto tmp = matrix2[0][0];
+    assert(tmp == 0);
+
+    for (size_t i = 1; i < 10; ++i){
+        matrix2[i][i] = i;
+    }
+
+    for (int i = 1; i < 10; ++i){
+        assert(matrix2[i][i] == i);
+    }
+
+// Второстепенную диагональ (от [0,9] до [9,0]) значениями от 9 до 0.
+    for (size_t i = 1; i < 10; ++i){
+        matrix2[i][9-i] = 9-i;
+    }
+
+    for (int i = 1; i < 10; ++i){
+        assert(matrix2[i][9-i] == 9-i);
+    }
+
+// вывести фрагмент матрицы от [1,1] до [8,8]. Между столбцами пробел.
+    for (size_t i = 1; i < 9; ++i){
+        for (size_t j = 1; j < 9; ++j){
+            cout << matrix2[i][j] << " ";
+        }
+        cout << endl;
+    }
+
+// количество занятых ячеек.
+    cout << "size: " << matrix2.size() << endl;
+
+// все занятые ячейки вместе со своими позициями.
+    for(auto c: matrix2)
+    {
+        int x;
+        int y;
+        int v;
+        std::tie(x, y, v) = c;
+        std::cout << "x: " << x << " y: " << y << " value: " << v << std::endl;
+    }
+
+
+// каноническую форму оператора =, допускающую выражения
+    ((matrix2[100][100] = 314) = 0) = 217;
+    assert(matrix2[100][100] == 217);
+
     return 0;
 }
