@@ -67,78 +67,79 @@ struct Output{
 
 };
 
+struct StateMachine{
+        unsigned cnt = 0;
+
+        unsigned cnt_dinamyc = 0;
+        enum {START,STATIC, DINAMYC};
+        unsigned state = START;
+        unsigned _block_size;
+
+        StateMachine(unsigned input_cmd_cnt): _block_size(input_cmd_cnt) {};
+
+    void state_machine(string str){
+            switch(state)
+            {
+                case START:
+                    cout << "START" << endl;
+                    state = STATIC;
+                    break;
+                case STATIC:
+                    cout << "STATIC" << endl;
+                    if(str == "{"){
+                        state = DINAMYC;
+                        ++cnt_dinamyc;
+                        break;
+                    }
+                    ++cnt;
+                break;
+                case DINAMYC:
+                    cout << "DINAMYC" << endl;
+                    if(str == "}"){
+                        --cnt_dinamyc;
+                        break;
+                    }
+                    if(str == "{"){
+                        ++cnt_dinamyc;
+                    }
+                break;
+            }
+}
+
+};
+
 int main(int argc, char** argv)
 {
     if (argc >= 2) {
         unsigned input_cmd_cnt = std::stoi(argv[1]);
-        cout << input_cmd_cnt << endl;
+        // cout << input_cmd_cnt << endl;
 
-
+        StateMachine st(input_cmd_cnt);
         Unit static_block(input_cmd_cnt);
         Unit dinamyc_block(10);
 
         Output action;
 
         string str;
-        unsigned cnt = 0;
 
-        bool dinamyc = false;
-        unsigned cnt_dinamyc = 0;
-        enum {START,STATIC, DINAMYC};
-        unsigned state = START;
-        // unsigned old_state = STATIC;
         while(!cin.fail()){
-            switch(state)
-            {
-                case START:
-                    // cout << "START" << endl;
-                    state = STATIC;
-                    break;
-                case STATIC:
-                    // cout << "STATIC" << endl;
-                    // if (ts.size() == 0) ts = time();
-                    action.ts_now();
-                    if(str == "{"){
-                        state = DINAMYC;
-                        ++cnt_dinamyc;
-                        // output(static_block);
-                        action.printToConsole(static_block);
-                        action.saveToFile(static_block);
-                        static_block.clear();
-                        // output(cmd_bulk);
-                        break;
-                    }
-                    // cmd_bulk.push_back(str);
-                    static_block.add(str);
-
-                    ++cnt;
-                    if (cnt == input_cmd_cnt && !dinamyc){
-                        cout << endl << "------" << endl;
-                        action.printToConsole(static_block);
-                        action.saveToFile(static_block);
-                        static_block.clear();
-                        // return 0;
-                        break;
-                    }
-                break;
-                case DINAMYC:
-                    // cout << "DINAMYC" << endl;
-                    if(str == "}"){
-                        --cnt_dinamyc;
-                        if( cnt_dinamyc == 0 ){
-                            action.printToConsole(dinamyc_block);
-                            action.saveToFile(dinamyc_block);
-                            dinamyc_block.clear();
-                        }
-                        break;
-                    }
-                    if(str == "{"){
-                        ++cnt_dinamyc;
-                    } else {
-                        dinamyc_block.add(str);
-                    }
-
-                break;
+            st.state_machine(str);
+            if(st.state == StateMachine::STATIC){
+                action.ts_now();
+                static_block.add(str);
+            }
+            else if(st.state == StateMachine::DINAMYC && str != "{" && str != "}"){
+                dinamyc_block.add(str);
+            }
+            if((st.state == StateMachine::DINAMYC && str == "{" && st.cnt_dinamyc == 1 )|| (st.state == StateMachine::STATIC && st.cnt == st._block_size)){
+                action.printToConsole(static_block);
+                action.saveToFile(static_block);
+                static_block.clear();
+            }
+            else if(st.state == StateMachine::DINAMYC && str == "}" && st.cnt_dinamyc == 0 ){
+                action.printToConsole(dinamyc_block);
+                action.saveToFile(dinamyc_block);
+                dinamyc_block.clear();
             }
             getline(cin, str);
         }
@@ -146,7 +147,6 @@ int main(int argc, char** argv)
         if(static_block.size() != 0){
             action.printToConsole(static_block);
             action.saveToFile(static_block);
-            // static_block.clear();
         }
     }
     return 0;
