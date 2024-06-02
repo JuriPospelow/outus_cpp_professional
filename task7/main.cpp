@@ -34,8 +34,31 @@ struct Unit{
     }
 };
 
-
 struct Output{
+    std::ostream& m_stream;
+
+    Output(std::ostream& stream_):m_stream(stream_){}
+
+    void out(Unit& cmd_bulk){
+        m_stream << "bulk: ";
+        string separator = "";
+        for (auto ele : cmd_bulk.getData()){
+            m_stream << separator << ele;
+            separator = ", ";
+        }
+        m_stream << endl;
+    }
+};
+
+struct Print{
+    void printToConsole(Unit& cmd_bulk){
+        Output _output(std::cout);
+        _output.out(cmd_bulk);
+    }
+
+};
+
+struct Log{
     string ts;
 
     void ts_now(){
@@ -49,19 +72,10 @@ struct Output{
         }
     }
 
-    void printToConsole(Unit& cmd_bulk){
-        cout << "bulk: ";
-        for (auto ele : cmd_bulk.getData()){
-            cout << ele <<" ";
-        }
-        cout << endl;
-    }
-
     void saveToFile(Unit& cmd_bulk){
-        std::ofstream log_file (ts + ".log", std::ofstream::app);
-        for (auto ele : cmd_bulk.getData()){
-            log_file << ele << endl;
-        }
+        std::ofstream log_file (ts + ".log");
+        Output _output(log_file);
+        _output.out(cmd_bulk);
         log_file.close();
     }
 
@@ -81,11 +95,12 @@ struct StateMachine{
             switch(state)
             {
                 case START:
-                    cout << "START" << endl;
+                    // cout << "START" << endl;
                     state = STATIC;
+                    ++cnt;
                     break;
                 case STATIC:
-                    cout << "STATIC" << endl;
+                    // cout << "STATIC" << endl;
                     if(str == "{"){
                         state = DINAMYC;
                         ++cnt_dinamyc;
@@ -94,7 +109,7 @@ struct StateMachine{
                     ++cnt;
                 break;
                 case DINAMYC:
-                    cout << "DINAMYC" << endl;
+                    // cout << "DINAMYC" << endl;
                     if(str == "}"){
                         --cnt_dinamyc;
                         break;
@@ -118,36 +133,44 @@ int main(int argc, char** argv)
         Unit static_block(input_cmd_cnt);
         Unit dinamyc_block(10);
 
-        Output action;
+        Print console;
+        Log logging;
 
         string str;
 
-        while(!cin.fail()){
-            st.state_machine(str);
-            if(st.state == StateMachine::STATIC){
-                action.ts_now();
-                static_block.add(str);
+        while(true){
+        // while(!cin.fail()){
+            if(getline(cin, str)){
+                st.state_machine(str);
+
+                if(st.state == StateMachine::STATIC){
+                    logging.ts_now();
+                    static_block.add(str);
+                }
+                else if(st.state == StateMachine::DINAMYC && str != "{" && str != "}"){
+                    dinamyc_block.add(str);
+                }
+
+                if(((st.state == StateMachine::DINAMYC && str == "{" && st.cnt_dinamyc == 1 )&& static_block.size() != 0) || (st.state == StateMachine::STATIC && st.cnt == st._block_size)){
+                    console.printToConsole(static_block);
+                    logging.saveToFile(static_block);
+                    static_block.clear();
+                }
+                else if(st.state == StateMachine::DINAMYC && str == "}" && st.cnt_dinamyc == 0 ){
+                    console.printToConsole(dinamyc_block);
+                    logging.saveToFile(dinamyc_block);
+                    dinamyc_block.clear();
+                }
+            } else {
+                // cout << "es war EOF"<<endl;
+                if(static_block.size() != 0){
+                    console.printToConsole(static_block);
+                    logging.saveToFile(static_block);
+                }
+                break;
             }
-            else if(st.state == StateMachine::DINAMYC && str != "{" && str != "}"){
-                dinamyc_block.add(str);
-            }
-            if((st.state == StateMachine::DINAMYC && str == "{" && st.cnt_dinamyc == 1 )|| (st.state == StateMachine::STATIC && st.cnt == st._block_size)){
-                action.printToConsole(static_block);
-                action.saveToFile(static_block);
-                static_block.clear();
-            }
-            else if(st.state == StateMachine::DINAMYC && str == "}" && st.cnt_dinamyc == 0 ){
-                action.printToConsole(dinamyc_block);
-                action.saveToFile(dinamyc_block);
-                dinamyc_block.clear();
-            }
-            getline(cin, str);
         }
-        cout << "es war EOF"<<endl;
-        if(static_block.size() != 0){
-            action.printToConsole(static_block);
-            action.saveToFile(static_block);
-        }
+
     }
     return 0;
 }
