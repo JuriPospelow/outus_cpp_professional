@@ -85,43 +85,102 @@ struct StateMachine{
         unsigned cnt = 0;
 
         unsigned cnt_dinamyc = 0;
-        enum {START,STATIC, DINAMYC};
-        unsigned state = START;
-        unsigned _block_size;
+        enum class State {START, STATIC, DINAMYC, END_OF_BLOCK};
+        enum class Event {NEW_CMD, OPEN_BLOCK, CLOSE_BLOCK};
 
-        StateMachine(unsigned input_cmd_cnt): _block_size(input_cmd_cnt) {};
+        State state = State::START;
 
-    void state_machine(string str){
+    void state_machine(Event event){
             switch(state)
             {
-                case START:
+                case State::START:
                     // cout << "START" << endl;
-                    state = STATIC;
+                    state = State::STATIC;
                     ++cnt;
                     break;
-                case STATIC:
+                case State::STATIC:
                     // cout << "STATIC" << endl;
-                    if(str == "{"){
-                        state = DINAMYC;
+                    if(event == Event::OPEN_BLOCK){
+                        state = State::END_OF_BLOCK;
                         ++cnt_dinamyc;
+                        cnt = 0;
                         break;
                     }
-                    ++cnt;
+                    else if(event == Event::NEW_CMD){
+                        ++cnt;
+                    }
                 break;
-                case DINAMYC:
+
+                case State::DINAMYC:
                     // cout << "DINAMYC" << endl;
-                    if(str == "}"){
+                    if(event == Event::CLOSE_BLOCK){
                         --cnt_dinamyc;
+                        if(cnt_dinamyc == 0) state = State::END_OF_BLOCK;
                         break;
                     }
-                    if(str == "{"){
+                    if(event == Event::OPEN_BLOCK){
                         ++cnt_dinamyc;
+                    }
+                    else if(event == Event::NEW_CMD){
+                        // ++cnt;
+                    }
+                break;
+
+                case State::END_OF_BLOCK:
+                    state = State::DINAMYC;
+                    if(event == Event::CLOSE_BLOCK){
+                        cout << "ERROR in State::END_OF_BLOCK: unit was yet finished" << endl;
+                    }
+                    if(event == Event::OPEN_BLOCK){
+                        ++cnt_dinamyc;
+                    }
+                    else if(event == Event::NEW_CMD){
+                        // ++cnt;
                     }
                 break;
             }
-}
+    }
+
+    void state_machine_handler(string str){
+        Event evnt;
+        if(str == "{") evnt = Event::OPEN_BLOCK;
+        else if(str == "}") evnt = Event::CLOSE_BLOCK;
+        else evnt = Event::NEW_CMD;
+
+        state_machine(evnt);
+
+    }
+
+    bool BulkEOB(){
+        return state == State::END_OF_BLOCK;
+    }
+};
+
+struct Process{
+    Print* console;
+    Log* logging;
+    StateMachine* fsm;
+
+    Process(Print* con, Log* log, StateMachine* sm):console(con), logging(log), fsm(sm) {}
+
+    void EOBactions(Unit* static_block){
+        console->printToConsole(*static_block);
+        logging->saveToFile(*static_block);
+        static_block->clear();
+    }
+
+    void handler(string str, Unit* static_block, unsigned input_cmd_cnt){
+        if(str != "{" && str != "}"){
+            logging->ts_now();
+            static_block->add(str);
+        }
+        if( fsm->BulkEOB() || fsm->cnt == input_cmd_cnt){
+            EOBactions(static_block);
+        }
+    }
 
 };
+
 
 int main(int argc, char** argv)
 {
@@ -129,43 +188,24 @@ int main(int argc, char** argv)
         unsigned input_cmd_cnt = std::stoi(argv[1]);
         // cout << input_cmd_cnt << endl;
 
-        StateMachine st(input_cmd_cnt);
+        StateMachine st;
         Unit static_block(input_cmd_cnt);
-        Unit dinamyc_block(10);
 
         Print console;
         Log logging;
+        Process process(&console, &logging, &st);
 
         string str;
 
         while(true){
-        // while(!cin.fail()){
             if(getline(cin, str)){
-                st.state_machine(str);
+                st.state_machine_handler(str);
+                process.handler(str, &static_block, input_cmd_cnt);
 
-                if(st.state == StateMachine::STATIC){
-                    logging.ts_now();
-                    static_block.add(str);
-                }
-                else if(st.state == StateMachine::DINAMYC && str != "{" && str != "}"){
-                    dinamyc_block.add(str);
-                }
-
-                if(((st.state == StateMachine::DINAMYC && str == "{" && st.cnt_dinamyc == 1 )&& static_block.size() != 0) || (st.state == StateMachine::STATIC && st.cnt == st._block_size)){
-                    console.printToConsole(static_block);
-                    logging.saveToFile(static_block);
-                    static_block.clear();
-                }
-                else if(st.state == StateMachine::DINAMYC && str == "}" && st.cnt_dinamyc == 0 ){
-                    console.printToConsole(dinamyc_block);
-                    logging.saveToFile(dinamyc_block);
-                    dinamyc_block.clear();
-                }
             } else {
                 // cout << "es war EOF"<<endl;
-                if(static_block.size() != 0){
-                    console.printToConsole(static_block);
-                    logging.saveToFile(static_block);
+                if(st.state == StateMachine::State::STATIC){
+                    process.EOBactions(&static_block);
                 }
                 break;
             }
