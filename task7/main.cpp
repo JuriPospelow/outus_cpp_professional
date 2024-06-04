@@ -6,120 +6,125 @@
 #include <fstream>
 #include <sstream>
 
-using namespace std;
+// using namespace std;
 
-struct Unit{
-    vector<string> cmd_bulk;
-
+class Unit{
+private:
+    std::vector<std::string> _cmd_bulk;
+public:
     explicit Unit(int input_cmd_cnt) {
-        cmd_bulk.reserve(input_cmd_cnt);
+        _cmd_bulk.reserve(input_cmd_cnt);
     }
 
-    vector<string> getData(){
-        return cmd_bulk;
+    std::vector<std::string>& getData(){
+        return _cmd_bulk;
     }
-    void add(string cmd)
+    void add(std::string cmd)
     {
-        cmd_bulk.push_back(cmd);
+        _cmd_bulk.push_back(cmd);
     }
 
     void clear()
     {
-        cmd_bulk.clear();
+        _cmd_bulk.clear();
     }
 
     size_t size()
     {
-        return cmd_bulk.size();
+        return _cmd_bulk.size();
     }
 };
 
-struct Output{
-    std::ostream& m_stream;
-
-    Output(std::ostream& stream_):m_stream(stream_){}
+class Output{
+private:
+    std::ostream& _stream;
+public:
+    Output(std::ostream& stream_):_stream(stream_){}
 
     void out(Unit& cmd_bulk){
-        m_stream << "bulk: ";
-        string separator = "";
+        _stream << "bulk: ";
+        std::string separator = "";
         for (auto ele : cmd_bulk.getData()){
-            m_stream << separator << ele;
+            _stream << separator << ele;
             separator = ", ";
         }
-        m_stream << endl;
+        _stream << std::endl;
     }
 };
 
-struct Print{
+class Print{
+public:
     void printToConsole(Unit& cmd_bulk){
-        Output _output(std::cout);
-        _output.out(cmd_bulk);
+        Output output(std::cout);
+        output.out(cmd_bulk);
     }
 
 };
 
-struct Log{
-    string ts;
-
+class Log{
+private:
+    std::string _ts;
+public:
     void ts_now(){
-        if (ts.size() == 0) {
+        if (_ts.size() == 0) {
             auto start_time = std::chrono::high_resolution_clock::now();
             auto timestamp = std::chrono::duration_cast<std::chrono::seconds>(start_time.time_since_epoch()).count();
 
             std::ostringstream oss;
             oss << timestamp;
-            ts = oss.str();
+            _ts = oss.str();
         }
     }
 
     void saveToFile(Unit& cmd_bulk){
-        std::ofstream log_file (ts + ".log");
-        Output _output(log_file);
-        _output.out(cmd_bulk);
+        std::ofstream log_file (_ts + ".log");
+        Output output(log_file);
+        output.out(cmd_bulk);
         log_file.close();
     }
 
 };
 
-struct StateMachine{
-        unsigned cnt = 0;
-
-        unsigned cnt_dinamyc = 0;
+class StateMachine{
+public:
         enum class State {START, STATIC, DINAMYC, END_OF_BLOCK};
         enum class Event {NEW_CMD, OPEN_BLOCK, CLOSE_BLOCK};
+private:
+        unsigned _cnt = 0;
+        unsigned _cnt_block_symbols = 0;
 
-        State state = State::START;
+        State _state = State::START;
 
-    void state_machine(Event event){
-            switch(state)
+    void stateMachine(Event event){
+            switch(_state)
             {
                 case State::START:
-                    // cout << "START" << endl;
-                    state = State::STATIC;
-                    ++cnt;
+                    // cout << "START" << std::endl;
+                    _state = State::STATIC;
+                    ++_cnt;
                     break;
                 case State::STATIC:
-                    // cout << "STATIC" << endl;
+                    // cout << "STATIC" << std::endl;
                     if(event == Event::OPEN_BLOCK){
-                        state = State::END_OF_BLOCK;
-                        ++cnt_dinamyc;
-                        cnt = 0;
+                        _state = State::END_OF_BLOCK;
+                        ++_cnt_block_symbols;
+                        _cnt = 0;
                         break;
                     }
                     else if(event == Event::NEW_CMD){
-                        ++cnt;
+                        ++_cnt;
                     }
                 break;
 
                 case State::DINAMYC:
-                    // cout << "DINAMYC" << endl;
+                    // cout << "DINAMYC" << std::endl;
                     if(event == Event::CLOSE_BLOCK){
-                        --cnt_dinamyc;
-                        if(cnt_dinamyc == 0) state = State::END_OF_BLOCK;
+                        --_cnt_block_symbols;
+                        if(_cnt_block_symbols == 0) _state = State::END_OF_BLOCK;
                         break;
                     }
                     if(event == Event::OPEN_BLOCK){
-                        ++cnt_dinamyc;
+                        ++_cnt_block_symbols;
                     }
                     else if(event == Event::NEW_CMD){
                         // ++cnt;
@@ -127,12 +132,12 @@ struct StateMachine{
                 break;
 
                 case State::END_OF_BLOCK:
-                    state = State::DINAMYC;
+                    _state = State::DINAMYC;
                     if(event == Event::CLOSE_BLOCK){
-                        cout << "ERROR in State::END_OF_BLOCK: unit was yet finished" << endl;
+                        std::cout << "ERROR in State::END_OF_BLOCK: unit was yet finished" << std::endl;
                     }
                     if(event == Event::OPEN_BLOCK){
-                        ++cnt_dinamyc;
+                        ++_cnt_block_symbols;
                     }
                     else if(event == Event::NEW_CMD){
                         // ++cnt;
@@ -141,41 +146,49 @@ struct StateMachine{
             }
     }
 
-    void state_machine_handler(string str){
+public:
+    void stateMachineHandler(std::string str){
         Event evnt;
         if(str == "{") evnt = Event::OPEN_BLOCK;
         else if(str == "}") evnt = Event::CLOSE_BLOCK;
         else evnt = Event::NEW_CMD;
 
-        state_machine(evnt);
-
+        stateMachine(evnt);
     }
 
-    bool BulkEOB(){
-        return state == State::END_OF_BLOCK;
+    bool bulkEOB(){
+        return _state == State::END_OF_BLOCK;
     }
+    unsigned cmdCnt(){
+        return _cnt;
+    }
+    bool eof(){
+        return _state == StateMachine::State::STATIC;
+    }
+
 };
 
-struct Process{
-    Print* console;
-    Log* logging;
-    StateMachine* fsm;
+class Process{
+private:
+    Print* _console;
+    Log* _logging;
+    StateMachine* _fsm;
+public:
+    Process(Print* con, Log* log, StateMachine* sm):_console(con), _logging(log), _fsm(sm) {}
 
-    Process(Print* con, Log* log, StateMachine* sm):console(con), logging(log), fsm(sm) {}
-
-    void EOBactions(Unit* static_block){
-        console->printToConsole(*static_block);
-        logging->saveToFile(*static_block);
+    void actionEOB(Unit* static_block){
+        _console->printToConsole(*static_block);
+        _logging->saveToFile(*static_block);
         static_block->clear();
     }
 
-    void handler(string str, Unit* static_block, unsigned input_cmd_cnt){
+    void handler(std::string str, Unit* static_block, unsigned input_cmd_cnt){
         if(str != "{" && str != "}"){
-            logging->ts_now();
+            _logging->ts_now();
             static_block->add(str);
         }
-        if( fsm->BulkEOB() || fsm->cnt == input_cmd_cnt){
-            EOBactions(static_block);
+        if( _fsm->bulkEOB() || _fsm->cmdCnt() == input_cmd_cnt){
+            actionEOB(static_block);
         }
     }
 
@@ -186,7 +199,7 @@ int main(int argc, char** argv)
 {
     if (argc >= 2) {
         unsigned input_cmd_cnt = std::stoi(argv[1]);
-        // cout << input_cmd_cnt << endl;
+        // cout << input_cmd_cnt << std::endl;
 
         StateMachine st;
         Unit static_block(input_cmd_cnt);
@@ -195,17 +208,17 @@ int main(int argc, char** argv)
         Log logging;
         Process process(&console, &logging, &st);
 
-        string str;
+        std::string str;
 
         while(true){
-            if(getline(cin, str)){
-                st.state_machine_handler(str);
+            if(getline(std::cin, str)){
+                st.stateMachineHandler(str);
                 process.handler(str, &static_block, input_cmd_cnt);
 
             } else {
-                // cout << "es war EOF"<<endl;
-                if(st.state == StateMachine::State::STATIC){
-                    process.EOBactions(&static_block);
+                // cout << "es war EOF"<<std::endl;
+                if(st.eof()){
+                    process.actionEOB(&static_block);
                 }
                 break;
             }
