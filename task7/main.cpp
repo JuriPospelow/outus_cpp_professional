@@ -5,6 +5,7 @@
 #include <chrono>
 #include <fstream>
 #include <sstream>
+#include <memory>
 
 // using namespace std;
 
@@ -41,10 +42,10 @@ private:
 public:
     Output(std::ostream& stream_):_stream(stream_){}
 
-    void out(Unit& cmd_bulk){
+    void out(std::shared_ptr <Unit> cmd_bulk){
         _stream << "bulk: ";
         std::string separator = "";
-        for (auto ele : cmd_bulk.getData()){
+        for (auto ele : cmd_bulk->getData()){
             _stream << separator << ele;
             separator = ", ";
         }
@@ -54,7 +55,7 @@ public:
 
 class Print{
 public:
-    void printToConsole(Unit& cmd_bulk){
+    void printToConsole(std::shared_ptr <Unit> cmd_bulk){
         Output output(std::cout);
         output.out(cmd_bulk);
     }
@@ -76,7 +77,7 @@ public:
         }
     }
 
-    void saveToFile(Unit& cmd_bulk){
+    void saveToFile(std::shared_ptr <Unit> cmd_bulk){
         std::ofstream log_file (_ts + ".log");
         Output output(log_file);
         output.out(cmd_bulk);
@@ -170,19 +171,19 @@ public:
 
 class Process{
 private:
-    Print* _console;
-    Log* _logging;
-    StateMachine* _fsm;
+    std::shared_ptr <Print> _console;
+    std::shared_ptr <Log> _logging;
+    std::shared_ptr <StateMachine> _fsm;
 public:
-    Process(Print* con, Log* log, StateMachine* sm):_console(con), _logging(log), _fsm(sm) {}
+    Process(std::shared_ptr <Print> con, std::shared_ptr<Log> log, std::shared_ptr <StateMachine> sm):_console(con), _logging(log), _fsm(sm) {}
 
-    void actionEOB(Unit* static_block){
-        _console->printToConsole(*static_block);
-        _logging->saveToFile(*static_block);
+    void actionEOB(std::shared_ptr <Unit> static_block){
+        _console->printToConsole(static_block);
+        _logging->saveToFile(static_block);
         static_block->clear();
     }
 
-    void handler(std::string str, Unit* static_block, unsigned input_cmd_cnt){
+    void handler(std::string str, std::shared_ptr <Unit> static_block, unsigned input_cmd_cnt){
         if(str != "{" && str != "}"){
             _logging->ts_now();
             static_block->add(str);
@@ -201,24 +202,24 @@ int main(int argc, char** argv)
         unsigned input_cmd_cnt = std::stoi(argv[1]);
         // cout << input_cmd_cnt << std::endl;
 
-        StateMachine st;
-        Unit static_block(input_cmd_cnt);
+        auto st = std::make_shared<StateMachine>();
+        auto static_block = std::make_shared<Unit>(input_cmd_cnt);
+        auto console = std::make_shared<Print>();
+        auto logging = std::make_shared<Log>();
 
-        Print console;
-        Log logging;
-        Process process(&console, &logging, &st);
+        Process process(console, logging, st);
 
         std::string str;
 
         while(true){
             if(getline(std::cin, str)){
-                st.stateMachineHandler(str);
-                process.handler(str, &static_block, input_cmd_cnt);
+                st->stateMachineHandler(str);
+                process.handler(str, static_block, input_cmd_cnt);
 
             } else {
                 // cout << "es war EOF"<<std::endl;
-                if(st.eof()){
-                    process.actionEOB(&static_block);
+                if(st->eof()){
+                    process.actionEOB(static_block);
                 }
                 break;
             }
