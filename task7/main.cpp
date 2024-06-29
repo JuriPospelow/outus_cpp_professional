@@ -6,6 +6,7 @@
 #include <fstream>
 #include <sstream>
 #include <memory>
+#include <list>
 
 // using namespace std;
 
@@ -53,38 +54,13 @@ public:
     }
 };
 
-class Print{
+class Logger {
 public:
-    void printToConsole(std::shared_ptr <Unit> cmd_bulk){
-        Output output(std::cout);
-        output.out(cmd_bulk);
-    }
-
+    virtual void log(std::shared_ptr <Unit> cmd_bulk) = 0;
+    virtual void ts_now() {};
+    virtual ~Logger(){};
 };
 
-class Log{
-private:
-    std::string _ts;
-public:
-    void ts_now(){
-        if (_ts.size() == 0) {
-            auto start_time = std::chrono::high_resolution_clock::now();
-            auto timestamp = std::chrono::duration_cast<std::chrono::seconds>(start_time.time_since_epoch()).count();
-
-            std::ostringstream oss;
-            oss << timestamp;
-            _ts = oss.str();
-        }
-    }
-
-    void saveToFile(std::shared_ptr <Unit> cmd_bulk){
-        std::ofstream log_file (_ts + ".log");
-        Output output(log_file);
-        output.out(cmd_bulk);
-        log_file.close();
-    }
-
-};
 
 class StateMachine{
 public:
@@ -171,21 +147,38 @@ public:
 
 class Process{
 private:
-    std::shared_ptr <Print> _console;
-    std::shared_ptr <Log> _logging;
+    std::list <Logger*> _logger;
     std::shared_ptr <StateMachine> _fsm;
 public:
-    Process(std::shared_ptr <Print> con, std::shared_ptr<Log> log, std::shared_ptr <StateMachine> sm):_console(con), _logging(log), _fsm(sm) {}
+    Process(std::shared_ptr <StateMachine> sm):_fsm(sm) {
+    }
+
+    void attach(Logger* logg){
+        _logger.push_back(logg);
+    }
+
+    void detach(Logger* logg){
+        _logger.remove(logg);
+    }
+
+    void notify(std::shared_ptr<Unit> cmd_bulk = nullptr){
+        for(Logger* lp : _logger){
+             if(cmd_bulk != nullptr){
+                lp->log(cmd_bulk);
+            } else {
+                lp->ts_now();
+            }
+        }
+    }
 
     void actionEOB(std::shared_ptr <Unit> static_block){
-        _console->printToConsole(static_block);
-        _logging->saveToFile(static_block);
+        notify(static_block);
         static_block->clear();
     }
 
     void handler(std::string str, std::shared_ptr <Unit> static_block, unsigned input_cmd_cnt){
         if(str != "{" && str != "}"){
-            _logging->ts_now();
+            notify();
             static_block->add(str);
         }
         if( _fsm->bulkEOB() || _fsm->cmdCnt() == input_cmd_cnt){
@@ -195,6 +188,46 @@ public:
 
 };
 
+class ConsoleLog : public Logger {
+public:
+    ConsoleLog(std::shared_ptr <Process> pro) : _process(pro){
+        this->_process->attach(this);
+    }
+    void log(std::shared_ptr <Unit> cmd_bulk) override {
+        Output output(std::cout);
+        output.out(cmd_bulk);
+    }
+private:
+  std::shared_ptr<Process> _process;
+};
+
+class FileLog : public Logger {
+private:
+    std::string _ts;
+    std::shared_ptr<Process> _process;
+public:
+    FileLog(std::shared_ptr <Process> pro) : _process(pro){
+        this->_process->attach(this);
+    }
+    void ts_now() override {
+        if (_ts.size() == 0) {
+            auto start_time = std::chrono::high_resolution_clock::now();
+            auto timestamp = std::chrono::duration_cast<std::chrono::seconds>(start_time.time_since_epoch()).count();
+
+            std::ostringstream oss;
+            oss << timestamp;
+            _ts = oss.str();
+        }
+    }
+
+    void log(std::shared_ptr <Unit> cmd_bulk) override {
+        std::ofstream log_file (_ts + ".log");
+        Output output(log_file);
+        output.out(cmd_bulk);
+        log_file.close();
+    }
+
+};
 
 int main(int argc, char** argv)
 {
@@ -203,23 +236,23 @@ int main(int argc, char** argv)
         // cout << input_cmd_cnt << std::endl;
 
         auto st = std::make_shared<StateMachine>();
-        auto static_block = std::make_shared<Unit>(input_cmd_cnt);
-        auto console = std::make_shared<Print>();
-        auto logging = std::make_shared<Log>();
+        auto process = std::make_shared<Process>(st);
 
-        Process process(console, logging, st);
+        auto static_block = std::make_shared<Unit>(input_cmd_cnt);
+        auto console = std::make_shared<ConsoleLog>(process);
+        auto logging = std::make_shared<FileLog>(process);
 
         std::string str;
 
         while(true){
             if(getline(std::cin, str)){
                 st->stateMachineHandler(str);
-                process.handler(str, static_block, input_cmd_cnt);
+                process->handler(str, static_block, input_cmd_cnt);
 
             } else {
                 // cout << "es war EOF"<<std::endl;
                 if(st->eof()){
-                    process.actionEOB(static_block);
+                    process->actionEOB(static_block);
                 }
                 break;
             }
